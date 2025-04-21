@@ -1,0 +1,2777 @@
+#define _CRT_SECURE_NO_WARNINGS 1
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdbool.h>
+#include <string.h>
+typedef struct card_s
+{
+    char color[10];
+    int value;
+    char action[15];
+    struct card_s* pt;
+}card;
+// Mechanics for the AI Players
+int AI(int bot) {
+    return 0;;
+}
+void shuffle(card deck[]) {
+    int i;
+    srand(time(NULL));
+    int num;
+    int num1;
+    card tempD;
+    //Swaps the deck card with another card in the deck 500 times
+    for (i = 0; i < 500; i++) {
+        num = rand() % 108;
+        num1 = rand() % 108;
+        tempD = deck[num];
+        deck[num] = deck[num1];
+        deck[num1] = tempD;
+    }
+}
+void NodeCreate(card* thisNode, int dataInit, card* nextLoc, card deck[]) {
+    strcpy(thisNode->color, deck[dataInit].color);
+    thisNode->value = deck[dataInit].value;
+    strcpy(thisNode->action, deck[dataInit].action);
+    thisNode->pt = nextLoc;
+}
+/* Insert newNode after node.
+Before: thisNode -- next
+After:  thisNode -- newNode -- next
+*/
+void NodeInsertAfter(card* thisNode, card* newNode) {
+    card* tmpNext = NULL;
+    tmpNext = thisNode->pt; // Remember next
+    thisNode->pt = newNode; // this -- new -- ?
+    newNode->pt = tmpNext;  // this -- new -- next
+}
+
+void createDeck(card deck[108]) {
+    int count;
+    int num;
+    for (count = 0; count < 108; count++) {
+        if (count <= 23) {
+            num = 0;
+            strcpy((deck[count].color), "red");
+            strcpy((deck[count].action), "none");
+            if (count <= num + 2) {
+                deck[count].value = 1;
+            }
+            else if (count <= num + 5) {
+                deck[count].value = 3;
+            }
+            else if (count <= num + 8) {
+                deck[count].value = 4;
+            }
+            else if (count <= num + 11) {
+                deck[count].value = 5;
+            }
+            else if (count <= num + 13) {
+                deck[count].value = 6;
+            }
+            else if (count <= num + 15) {
+                deck[count].value = 7;
+            }
+            else if (count <= num + 17) {
+                deck[count].value = 8;
+            }
+            else if (count <= num + 19) {
+                deck[count].value = 9;
+            }
+            else if (count <= num + 21) {
+                deck[count].value = 10;
+            }
+            else if (count <= num + 23) {
+                deck[count].value = 11;
+            }
+        }
+        else if (count <= 47) {
+            num = 24;
+            strcpy((deck[count].color), "blue");
+            strcpy((deck[count].action), "none");
+            if (count <= num + 2) {
+                deck[count].value = 1;
+            }
+            else if (count <= num + 5) {
+                deck[count].value = 3;
+            }
+            else if (count <= num + 8) {
+                deck[count].value = 4;
+            }
+            else if (count <= num + 11) {
+                deck[count].value = 5;
+            }
+            else if (count <= num + 13) {
+                deck[count].value = 6;
+            }
+            else if (count <= num + 15) {
+                deck[count].value = 7;
+            }
+            else if (count <= num + 17) {
+                deck[count].value = 8;
+            }
+            else if (count <= num + 19) {
+                deck[count].value = 9;
+            }
+            else if (count <= num + 21) {
+                deck[count].value = 10;
+            }
+            else if (count <= num + 23) {
+                deck[count].value = 11;
+            }
+        }
+        else if (count <= 71) {
+            num = 48;
+            strcpy((deck[count].color), "green");
+            strcpy((deck[count].action), "none");
+            if (count <= num + 2) {
+                deck[count].value = 1;
+            }
+            else if (count <= num + 5) {
+                deck[count].value = 3;
+            }
+            else if (count <= num + 8) {
+                deck[count].value = 4;
+            }
+            else if (count <= num + 11) {
+                deck[count].value = 5;
+            }
+            else if (count <= num + 13) {
+                deck[count].value = 6;
+            }
+            else if (count <= num + 15) {
+                deck[count].value = 7;
+            }
+            else if (count <= num + 17) {
+                deck[count].value = 8;
+            }
+            else if (count <= num + 19) {
+                deck[count].value = 9;
+            }
+            else if (count <= num + 21) {
+                deck[count].value = 10;
+            }
+            else if (count <= num + 23) {
+                deck[count].value = 11;
+            }
+        }
+        else if (count <= 95) {
+            num = 72;
+            strcpy((deck[count].color), "yellow");
+            strcpy((deck[count].action), "none");
+            if (count <= num + 2) {
+                deck[count].value = 1;
+            }
+            else if (count <= num + 5) {
+                deck[count].value = 3;
+            }
+            else if (count <= num + 8) {
+                deck[count].value = 4;
+            }
+            else if (count <= num + 11) {
+                deck[count].value = 5;
+            }
+            else if (count <= num + 13) {
+                deck[count].value = 6;
+            }
+            else if (count <= num + 15) {
+                deck[count].value = 7;
+            }
+            else if (count <= num + 17) {
+                deck[count].value = 8;
+            }
+            else if (count <= num + 19) {
+                deck[count].value = 9;
+            }
+            else if (count <= num + 21) {
+                deck[count].value = 10;
+            }
+            else if (count <= num + 23) {
+                deck[count].value = 11;
+            }
+        }
+        else {
+            strcpy((deck[count].color), "black");
+            deck[count].value = 2;
+            strcpy((deck[count].action), "AnyColor");
+        }
+    }
+}
+
+card* GetNextNode(card* Node) {
+    return Node->pt;
+}
+
+void NodePrintNodeData(card* Node) {
+    int t;
+    int c;
+
+    t = Node->value;
+    if (strcmp("red", Node->color) == 0) {
+        c = 2;
+    }
+    else if (strcmp("blue", Node->color) == 0) {
+        c = 1;
+    }
+    else if (strcmp("yellow", Node->color) == 0) {
+        c = 0;
+    }
+    else if (strcmp("green", Node->color) == 0) {
+        c = 3;
+    }
+    else {
+        c = 4;
+    }
+    printf("type: %d color: %s\n", Node->value, Node->color);
+    if (t == 1) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|       |\n");
+            printf("|  /|   |\n");
+            printf("|   |   |\n");
+            printf("|  ---  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|       |\n");
+            printf("|  /|   |\n");
+            printf("|   |   |\n");
+            printf("|  ---  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|       |\n");
+            printf("|  /|   |\n");
+            printf("|   |   |\n");
+            printf("|  ---  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|       |\n");
+            printf("|  /|   |\n");
+            printf("|   |   |\n");
+            printf("|  ---  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 2) {
+        printf("_________\n");
+        printf("| wild  |\n");
+        printf("|  __   |\n");
+        printf("| /  |  |\n");
+        printf("|   /   |\n");
+        printf("|  /__  |\n");
+        printf("|       |\n");
+        printf("---------\n");
+    }
+    else if (t == 3) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|  __   |\n");
+            printf("| /  /  |\n");
+            printf("|    \\  |\n");
+            printf("| \\__/  |\n");
+            printf("|       |\n");
+            printf("---------\n");//3
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|  __   |\n");
+            printf("| /  /  |\n");
+            printf("|    \\  |\n");
+            printf("| \\__/  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|  __   |\n");
+            printf("| /  /  |\n");
+            printf("|    \\  |\n");
+            printf("| \\__/  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|  __   |\n");
+            printf("| /  /  |\n");
+            printf("|    \\  |\n");
+            printf("| \\__/  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 4) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("| |  |  |\n");
+            printf("| |__|  |\n");
+            printf("|    |  |\n");
+            printf("|    |  |\n");
+            printf("|       |\n");
+            printf("---------\n"); //4
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("| |  |  |\n");
+            printf("| |__|  |\n");
+            printf("|    |  |\n");
+            printf("|    |  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("| |  |  |\n");
+            printf("| |__|  |\n");
+            printf("|    |  |\n");
+            printf("|    |  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("| |  |  |\n");
+            printf("| |__|  |\n");
+            printf("|    |  |\n");
+            printf("|    |  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 5) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|  ____ |\n");
+            printf("|  |    |\n");
+            printf("|   --  |\n");
+            printf("|  __/  |\n");
+            printf("|       |\n");
+            printf("---------\n"); //5
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|  ____ |\n");
+            printf("|  |    |\n");
+            printf("|   --  |\n");
+            printf("|  __/  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|  ____ |\n");
+            printf("|  |    |\n");
+            printf("|   --  |\n");
+            printf("|  __/  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|  ____ |\n");
+            printf("|  |    |\n");
+            printf("|   --  |\n");
+            printf("|  __/  |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 6) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|  ___  |\n");
+            printf("| |     |\n");
+            printf("| |___  |\n");
+            printf("| |   \\ |\n");
+            printf("| |___/ |\n");
+            printf("---------\n");//6
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|  ___  |\n");
+            printf("| |     |\n");
+            printf("| |___  |\n");
+            printf("| |   \\ |\n");
+            printf("| |___/ |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|  ___  |\n");
+            printf("| |     |\n");
+            printf("| |___  |\n");
+            printf("| |   \\ |\n");
+            printf("| |___/ |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|  ___  |\n");
+            printf("| |     |\n");
+            printf("| |___  |\n");
+            printf("| |   \\ |\n");
+            printf("| |___/ |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 7) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("| _____ |\n");
+            printf("|     / |\n");
+            printf("|   -/- |\n");
+            printf("|   /   |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("| _____ |\n");
+            printf("|     / |\n");
+            printf("|   -/- |\n");
+            printf("|   /   |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("| _____ |\n");
+            printf("|     / |\n");
+            printf("|   -/- |\n");
+            printf("|   /   |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("| _____ |\n");
+            printf("|     / |\n");
+            printf("|   -/- |\n");
+            printf("|   /   |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 8) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|  ___  |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("---------\n");//8
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|  ___  |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|  ___  |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|  ___  |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("| /   \\ |\n");
+            printf("| \\___/ |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 9) {
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|  ___  |\n");
+            printf("| |   | |\n");
+            printf("| \\___| |\n");
+            printf("|     | |\n");
+            printf("|     | |\n");
+            printf("---------\n");
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|  ___  |\n");
+            printf("| |   | |\n");
+            printf("| \\___| |\n");
+            printf("|     | |\n");
+            printf("|     | |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|  ___  |\n");
+            printf("| |   | |\n");
+            printf("| \\___| |\n");
+            printf("|     | |\n");
+            printf("|     | |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|  ___  |\n");
+            printf("| |   | |\n");
+            printf("| \\___| |\n");
+            printf("|     | |\n");
+            printf("|     | |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 10) {
+        //LJUPDATE: CHANGED 'REVERSE' TO 10
+        if (c == 0) {
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|   __  |\n");
+            printf("|| / /\\ |\n");
+            printf("|| |/ | |\n");
+            printf("|| \\__/ |\n");
+            printf("|       |\n");
+            printf("---------\n");//10
+        }
+        if (c == 1) {
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|   __  |\n");
+            printf("|| / /\\ |\n");
+            printf("|| |/ | |\n");
+            printf("|| \\__/ |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|   __  |\n");
+            printf("|| / /\\ |\n");
+            printf("|| |/ | |\n");
+            printf("|| \\__/ |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|   __  |\n");
+            printf("|| / /\\ |\n");
+            printf("|| |/ | |\n");
+            printf("|| \\__/ |\n");
+            printf("|       |\n");
+            printf("---------\n");
+        }
+    }
+    else if (t == 11) {
+        //LJUPDATE: CHANGED 'SKIP' TO # AND ADDED GRAPHIC 'IF' STATEMENTS
+        if (c == 0) {
+            //YELLOW
+            printf("_________\n");
+            printf("|Y      |\n");
+            printf("|       |\n");
+            printf("|  /   /|\n");
+            printf("|_/___/_|\n");
+            printf("|_/___/_|\n");
+            printf("|/   /  |\n");
+            printf("---------\n");//#
+        }
+        if (c == 1) {
+            //BLUE
+            printf("_________\n");
+            printf("|B      |\n");
+            printf("|       |\n");
+            printf("|  /   /|\n");
+            printf("|_/___/_|\n");
+            printf("|_/___/_|\n");
+            printf("|/   /  |\n");
+            printf("---------\n");
+        }
+        if (c == 2) {
+            //RED
+            printf("_________\n");
+            printf("|R      |\n");
+            printf("|       |\n");
+            printf("|  /   /|\n");
+            printf("|_/___/_|\n");
+            printf("|_/___/_|\n");
+            printf("|/   /  |\n");
+            printf("---------\n");
+        }
+        if (c == 3) {
+            //GREEN
+            printf("_________\n");
+            printf("|G      |\n");
+            printf("|       |\n");
+            printf("|  /   /|\n");
+            printf("|_/___/_|\n");
+            printf("|_/___/_|\n");
+            printf("|/   /  |\n");
+            printf("---------\n");
+        }
+    }
+}
+
+bool isPlayable1(card* center, card* pcard1, int num) {
+    int i;
+    int num1;
+    int c;
+
+    for (i = 1; i < num; i++) {
+        pcard1 = GetNextNode(pcard1);
+    }
+    num1 = pcard1->value;
+    c = center->value;
+
+    if ((c == num1)||(c == 11)||(num1 == 11)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+
+}
+
+bool isPlayable2(card* center, card* pcard1, int num1, int num2) {
+    int i;
+    int j;
+    int n1;
+    int n2;
+    int n3;
+    int c;
+
+    for (i = 1; i < num1; i++) {
+        pcard1 = GetNextNode(pcard1);
+    }
+
+    n1 = pcard1->value;
+
+    for (j = 0; j < (num2 - num1); j++) {
+        pcard1 = GetNextNode(pcard1);
+    }
+
+    n2 = pcard1->value;
+
+    n3 = n1 + n2;
+
+    c = center->value;
+
+    if ((c == n3)||(c == 11)||(n1==11)||(n2==11)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+
+}
+
+void addToEnd(card deck[108], int* count,card* curr, card* tail) {
+    curr = tail;
+    curr = (card*)malloc(sizeof(card));
+    NodeCreate(curr, *count, NULL, deck);
+    (*count)++;
+    NodeInsertAfter(tail, curr);
+    tail = curr;
+}
+
+void replaceCenterCard(card* tail, card* curr, card* head, int* replace,  int* centerCards, card deck[108], int* count) {
+
+    strcpy(curr->action, deck[*count].action);
+    strcpy(curr->color, deck[*count].color);
+    curr->value = deck[*count].value;
+    (*count)++;
+}
+
+void addCenterCard(card* tail, card* curr, card* head, card card1) {
+    curr = tail;
+    curr = (card*)malloc(sizeof(card));
+    strcpy(curr->color, card1.color);
+    curr->value = card1.value;
+    strcpy(curr->action, card1.action);
+    curr->pt = NULL;
+
+    NodeInsertAfter(tail, curr);
+    tail = curr;
+}
+
+bool isSingleColorMatch(card* pcurr, card* ccurr) {
+    if ((strcmp(pcurr->color, ccurr->color)) == 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool isDoubleColorMatch(card* pcurr, card temp, card* ccurr) {
+    if (((strcmp(pcurr->color, ccurr->color)) == 0)&&((strcmp(temp.color, ccurr->color)) == 0)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+int main(void) {
+    FILE* fp;
+    card* phead1 = NULL;
+    card* ptail1 = NULL;
+    card* pcurr1 = NULL;
+    card* phead2 = NULL;
+    card* ptail2 = NULL;
+    card* pcurr2 = NULL;
+    card* phead3 = NULL;
+    card* ptail3 = NULL;
+    card* pcurr3 = NULL;
+    card* phead4 = NULL;
+    card* ptail4 = NULL;
+    card* pcurr4 = NULL;
+    card* phead5 = NULL;
+    card* ptail5 = NULL;
+    card* pcurr5 = NULL;
+    card* phead6 = NULL;
+    card* ptail6 = NULL;
+    card* pcurr6 = NULL;
+
+    card* chead = NULL;
+    card* ctail = NULL;
+    card* ccurr = NULL;
+
+    card deck[108];
+    card tableCard;
+
+    card pcardTemp;
+
+    card center;
+    int centerCards;
+
+    bool isturnEnd;
+    bool haswon;
+
+    int count;
+    srand(time(NULL));
+    int deckSize;
+    int num;
+    int Colorp[8][100]; //Array containing (Player#, #Card in hand) = (Color Type)
+    int Typep[8][100]; //Array containing (Player#, #Card in hand) = (Card Type)
+    int tableColor;
+    int tableType;
+    int p; //Players besides yourself
+    char name[100];
+    char r0;
+    int r1;
+    int i; //used in for loops
+    int j; //used in for loops
+    int c; //color #
+    int t; //type #
+    int turn; //keeps track of who's turn it is number corresponds to which player is going
+    int reverse; //keeps of orientation of turns
+    char rYN; //char to keep track if  user wants to see the rules or not
+
+    int cardsPlace; //number of cards player would like to place
+    int card1;
+    int card2;
+    int replace;
+    int sColorMatches;
+    int dColorMatches;
+
+    deckSize = 108;
+    count = 0;
+
+    centerCards = 2;
+    replace = 0;
+    turn = 0;
+
+    bool endturn;
+
+    printf("BY: ELMER Y RAYGOZA, LUCAS JIMENEZ\n\n");
+
+    printf("\tWelcome to Jank DOS!\n Would you like to see the rules of DOS? (y/n)\n");
+    scanf(" %c", &rYN);
+    while (rYN == 'y') {
+        printf("Objective:  The primary objective of Dos is to discard all cards in one’s hand before anyone else does (and earn points from the cards still left in other player’s hands). Like Uno, you have to discard your cards by matching the cards in the center, but here in Dos, you can only match them by number. The numbers need to be matched first, then only the color is noted. Colors only earn a bonus called a Color Match Bonus. The first player to reach a score of 200 points (or any number the players agree on) is the game winner\n\nSpecial Wild Cards\nBesides the numbered cards, Dos has special Wild cards, but these are different from the ones in Uno. The Wild cards are the colored Wild # cards (which can represent any number), and the Wild Dos cards (which are “2"" cards that can represent any color).\nWild Dos card – The number 2 cards in Dos are represented by these Wild cards, which can take up any color as the player (whose current turn it is to play) sees fit. If a Wild Dos card is turned up from the Draw pile, the player whose turn it is to play can decide what color it should be.\nWild # card – The Wild # card can represent any number for its own particular color. This can be used to make up any number from 1-10, as the player (whose current turn it is to play) sees fit. If a Wild # card is turned up from the Draw pile, the player whose turn it is to play can decide what number it should be.\n\n Gameplay:\n Deal 7 cards to everyone, place the main deck in the center to form the Draw pile/deck, and turn up two cards to be the Center Row.\nMatching Cards: Cards are matched by number. Cards can be matched by Single matches and Double matches for the two cards in the Center Row. For each card in the Center Row, you are only allowed a maximum of TWO cards to match (e.g., 3 with 3, or 1+3). If there are 4 cards in the Center Row, you can match cards to ALL four of them as long as you have matching cards in your hand, but only a maximum of two per Center Row cardSingle Match – Match cards by number, although the color would be different. Example: Match a Red 3 with a Green 3.\nDouble Match – Match cards by placing two cards that add up to the number of the Center Row card, although the color would be different. Example: Match a Red 5 with a Green 1 and Blue 4.\nSingle Color Match – Match cards by number AND color. This earns you a Color Match Bonus, which entitles you to discard one card from your hand by placing it in the Center Row at the end of your turn. Example: Match a Red 3 with a Red 3 from your hand. Another example would be matching a Red 3 with a Wild Red # card that can take up any number. If you get two or more Single Color Matches on two Center Rows, you can discard cards from your hand by placing them in the Center Row for all of them.\nDouble Color Match – Match cards by placing two cards that add up to the number of the Center Row card, AND are the same in color. Example: Match a Red 5 with a Red 1 and a Red 4. Another example would be matching a Red 3 with a Red 1 and a Wild Dos card which has the number 2 and can take up any color you want. Getting a Double Color Match entitles you to discard one card from your hand by placing it in the Center Row AND compels all other players to DRAW a card from the Draw pile. If you get two or more Double Color Matches on two or more Center Rows, you can discard cards from your hand by placing them in the Center Row for all the cards AND everyone else needs to draw two or more cards from the Draw pile depending on how many Double Color Matches you get.\n\nEnding your Turn:\nIf you can have no cards to match, you must draw a card from the Draw pile. If you can match it, you can choose to do so.\n\nWinning the Game:\nThe first player who discards all his/her cards is the winner of the round.\n\n");//I got this off the UNO website: https://www.unorules.com/dos-rules/
+        break;
+    }
+    printf("How many players will you play against?\n");
+    scanf("%d", &p);
+    while (p < 1 || p > 5) {
+        printf("Max additional players is 5:\nMin additional players is 1:\nHow many players will you play against?\n");
+        scanf("\n%d", &p);
+    }
+    printf("You are playing against %d players correct? (y/n)\n", p);
+    scanf("\n%c", &r0);
+    while ((r0 != 'y')) {
+        if (r0 == 'n') {
+            printf("How many players will you play against?\n");
+            scanf("%d", &p);
+            printf("You are playing against %d players correct? (y/n)\n", p);
+            scanf("\n%c", &r0);
+        }
+        else {
+            printf("(y/n)\n");
+            scanf("\n%c", &r0);
+        }
+    }
+
+    if (p < 1 || p>5) {
+        printf("Max additional players is 5:\nMin additional players is 1:\nHow many players will you play against?\n");
+        printf("\n\nTHERE HAS BEEN AN ERROR PLAYERS INPUTTED EXCEEDS LIMIT\n\n");
+        return -1;
+    }
+    if (r0 == 'y') {
+        printf("Generating players...\n");
+    }
+    p++;
+    printf("%d Total Players!\n", p);
+
+    //CREATE DECK FUNCTION HERE (PROMPT USER TO EITHER ENTER FILE NAME OR USE DEFAULT
+    printf("Would you like to use your own deck or use a pregenerated one?\nType 1 for pregenerated deck and 2 for deck from a file\n");
+    scanf("%d", &r1);
+    if (r1 == 2) {
+        printf("What file would you like to use for the deck? (NAME.txt)\n");
+        scanf("%s", &name);
+        fp = fopen(name, "r");
+        //Create to make the deck out of the file given
+        fp = fopen(name, "r");
+        if (fp == NULL) {
+            printf("Error: could not open file %s\n", name);
+            return 1;
+        }
+        // read deck from file into deck array
+        deckSize = 0;
+        while (fscanf(fp, "%s %d %s", deck[deckSize].color, &deck[deckSize].value, deck[deckSize].action) == 3) {
+            deckSize++;
+        }
+        fclose(fp);
+        printf("Deck loaded successfully from %s\n", name);
+
+        //DELETE THIS LATER THIS IS FOR TESTING
+
+    }
+    else
+    {
+        //IF USER USES DEFAULT DECK PROMPT THE USER TO SHUFFLE THE DECK
+        createDeck(deck);
+        printf("Would you like to shuffle the cards? (y/n)\n");
+        scanf("\n%c", &r0);
+        if (r0 == 'y') {
+            printf("\nshuffling cards...\n");
+            //Create shuffle function
+            shuffle(deck);
+
+        }
+    }
+    center = deck[107];
+
+    //THIS IS THE LINKED LIST FOR THE CENTER CARDS
+    //This creates the first node and because it is the first and only node it is both the first and the last hence tail = head
+    chead = (card*)malloc(sizeof(card));
+    NodeCreate(chead, count, NULL, deck);
+    count++;
+    ctail = chead;
+    //runs 1 times to add 1 more card
+    ccurr = (card*)malloc(sizeof(card));
+    NodeCreate(ccurr, count, NULL, deck);
+    count++;
+    NodeInsertAfter(ctail, ccurr);
+
+    ccurr = chead;
+
+    //CREATE PLAYER LINKED LISTS
+    if (p == 2) {
+        //This creates the first node and because it is the first and only node it is both the first and the last hence tail = head
+        phead1 = (card*)malloc(sizeof(card));
+        NodeCreate(phead1, count, NULL, deck);
+        count++;
+        ptail1 = phead1;
+        //runs 6 times to add 6 more cards as the statement before this one only adds one card
+        for (i = 0; i < 6; i++) {
+            pcurr1 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr1, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail1, pcurr1);
+            ptail1 = pcurr1;
+        }
+        phead2 = (card*)malloc(sizeof(card));
+        NodeCreate(phead2, count, NULL, deck);
+        count++;
+        ptail2 = phead2;
+        for (i = 0; i < 6; i++) {
+            pcurr2 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr2, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail2, pcurr2);
+            ptail2 = pcurr2;
+        }
+    }
+    else if (p == 3) {
+        phead1 = (card*)malloc(sizeof(card));
+        NodeCreate(phead1, count, NULL, deck);
+        count++;
+        ptail1 = phead1;
+        for (i = 0; i < 6; i++) {
+            pcurr1 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr1, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail1, pcurr1);
+            ptail1 = pcurr1;
+        }
+        phead2 = (card*)malloc(sizeof(card));
+        NodeCreate(phead2, count, NULL, deck);
+        count++;
+        ptail2 = phead2;
+        for (i = 0; i < 6; i++) {
+            pcurr2 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr2, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail2, pcurr2);
+            ptail2 = pcurr2;
+        }
+        phead3 = (card*)malloc(sizeof(card));
+        NodeCreate(phead3, count, NULL, deck);
+        count++;
+        ptail3 = phead3;
+        for (i = 0; i < 6; i++) {
+            pcurr3 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr3, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail3, pcurr3);
+            ptail3 = pcurr3;
+        }
+    }
+    else if (p == 4) {
+        phead1 = (card*)malloc(sizeof(card));
+        NodeCreate(phead1, count, NULL, deck);
+        count++;
+        ptail1 = phead1;
+        for (i = 0; i < 6; i++) {
+            pcurr1 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr1, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail1, pcurr1);
+            ptail1 = pcurr1;
+        }
+        phead2 = (card*)malloc(sizeof(card));
+        NodeCreate(phead2, count, NULL, deck);
+        count++;
+        ptail2 = phead2;
+        for (i = 0; i < 6; i++) {
+            pcurr2 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr2, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail2, pcurr2);
+            ptail2 = pcurr2;
+        }
+        phead3 = (card*)malloc(sizeof(card));
+        NodeCreate(phead3, count, NULL, deck);
+        count++;
+        ptail3 = phead3;
+        for (i = 0; i < 6; i++) {
+            pcurr3 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr3, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail3, pcurr3);
+            ptail3 = pcurr3;
+        }
+        phead4 = (card*)malloc(sizeof(card));
+        NodeCreate(phead4, count, NULL, deck);
+        count++;
+        ptail4 = phead4;
+        for (i = 0; i < 6; i++) {
+            pcurr4 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr4, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail4, pcurr4);
+            ptail4 = pcurr4;
+        }
+    }
+    else if (p == 5) {
+        phead1 = (card*)malloc(sizeof(card));
+        NodeCreate(phead1, count, NULL, deck);
+        count++;
+        ptail1 = phead1;
+        for (i = 0; i < 6; i++) {
+            pcurr1 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr1, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail1, pcurr1);
+            ptail1 = pcurr1;
+        }
+        phead2 = (card*)malloc(sizeof(card));
+        NodeCreate(phead2, count, NULL, deck);
+        count++;
+        ptail2 = phead2;
+        for (i = 0; i < 6; i++) {
+            pcurr2 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr2, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail2, pcurr2);
+            ptail2 = pcurr2;
+        }
+        phead3 = (card*)malloc(sizeof(card));
+        NodeCreate(phead3, count, NULL, deck);
+        count++;
+        ptail3 = phead3;
+        for (i = 0; i < 6; i++) {
+            pcurr3 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr3, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail3, pcurr3);
+            ptail3 = pcurr3;
+        }
+        phead4 = (card*)malloc(sizeof(card));
+        NodeCreate(phead4, count, NULL, deck);
+        count++;
+        ptail4 = phead4;
+        for (i = 0; i < 6; i++) {
+            pcurr4 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr4, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail4, pcurr4);
+            ptail4 = pcurr4;
+        }
+        phead5 = (card*)malloc(sizeof(card));
+        NodeCreate(phead5, count, NULL, deck);
+        count++;
+        ptail5 = phead5;
+        for (i = 0; i < 6; i++) {
+            pcurr5 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr5, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail5, pcurr5);
+            ptail5 = pcurr5;
+        }
+    }
+    else if (p == 6) {
+        phead1 = (card*)malloc(sizeof(card));
+        NodeCreate(phead1, count, NULL, deck);
+        count++;
+        ptail1 = phead1;
+        for (i = 0; i < 6; i++) {
+            pcurr1 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr1, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail1, pcurr1);
+            ptail1 = pcurr1;
+        }
+        phead2 = (card*)malloc(sizeof(card));
+        NodeCreate(phead2, count, NULL, deck);
+        count++;
+        ptail2 = phead2;
+        for (i = 0; i < 6; i++) {
+            pcurr2 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr2, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail2, pcurr2);
+            ptail2 = pcurr2;
+        }
+        phead3 = (card*)malloc(sizeof(card));
+        NodeCreate(phead3, count, NULL, deck);
+        count++;
+        ptail3 = phead3;
+        for (i = 0; i < 6; i++) {
+            pcurr3 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr3, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail3, pcurr3);
+            ptail3 = pcurr3;
+        }
+        phead4 = (card*)malloc(sizeof(card));
+        NodeCreate(phead4, count, NULL, deck);
+        count++;
+        ptail4 = phead4;
+        for (i = 0; i < 6; i++) {
+            pcurr4 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr4, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail4, pcurr4);
+            ptail4 = pcurr4;
+        }
+        phead5 = (card*)malloc(sizeof(card));
+        NodeCreate(phead5, count, NULL, deck);
+        count++;
+        ptail5 = phead5;
+        for (i = 0; i < 6; i++) {
+            pcurr5 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr5, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail5, pcurr5);
+            ptail5 = pcurr5;
+        }
+        phead6 = (card*)malloc(sizeof(card));
+        NodeCreate(phead6, count, NULL, deck);
+        count++;
+        ptail6 = phead6;
+        for (i = 0; i < 6; i++) {
+            pcurr6 = (card*)malloc(sizeof(card));
+            NodeCreate(pcurr6, count, NULL, deck);
+            count++;
+            NodeInsertAfter(ptail6, pcurr6);
+            ptail6 = pcurr6;
+        }
+    }
+
+    printf("The center cards are the following\n");
+
+    while (ccurr != NULL) {
+        NodePrintNodeData(ccurr);
+        ccurr = GetNextNode(ccurr);
+    }
+
+    haswon = false;
+    isturnEnd = false;
+
+    while (haswon != true) {
+        sColorMatches = 0;
+        dColorMatches = 0;
+
+        if (turn == 0) {
+            printf("Player 1's turn\n Your cards are the following\n");
+
+            pcurr1 = phead1;
+
+            while (pcurr1 != NULL) {
+                NodePrintNodeData(pcurr1);
+                pcurr1 = GetNextNode(pcurr1);
+
+            }
+
+            ccurr = chead;
+            pcurr1 = phead1;
+            isturnEnd = false;
+            endturn = false;
+
+            while (isturnEnd != true) {
+
+                printf("how many cards would you like to play on: \n");
+
+                NodePrintNodeData(ccurr);
+                printf("\nType 0, 1 or 2\n");
+                scanf("%d", &cardsPlace);
+                if ((cardsPlace == 0)) {
+
+                }
+                else if (cardsPlace == 1) {
+                    printf("What card would you like to place (x)? \n");
+                    scanf("%d", &card1);
+                    while (!isPlayable1(ccurr, pcurr1, card1)) {
+                        printf("That card is not playable try again!\n\n");
+                        printf("What card would you like to place (x)? \n");
+                        scanf("%d", &card1);
+
+                    }
+                    if (isPlayable1(ccurr, pcurr1, card1)) {
+                        printf("That card was playable \n");
+
+                        replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                        pcurr1 = phead1;
+                        for (i = 1; i < card1; i++) {
+                            pcurr1 = GetNextNode(pcurr1);
+                        }
+
+                        if (isSingleColorMatch(pcurr1, ccurr)) {
+                            sColorMatches++;
+                        }
+
+                        if (card1 != 1) {
+                            card* temp;
+                            pcurr1 = phead1;
+                            for (i = 1; i < card1 - 1; i++) {
+                                pcurr1 = GetNextNode(pcurr1);
+                            }
+                            temp = pcurr1->pt;
+
+                            if (pcurr1->pt->pt != NULL)
+                            {
+                                pcurr1->pt = pcurr1->pt->pt;
+                            }
+                            else if (pcurr1->pt->pt == NULL) {
+                                NodeInsertAfter(ptail1, pcurr1);
+                                ptail1 = pcurr1;
+                            }
+                            free(temp);
+                        }
+                        else if (card1 == 1) {
+                            card* temp;
+                            temp = phead1;
+                            phead1 = phead1->pt;
+                            free(temp);
+                        }
+
+                        printf("Player 1's turn\n Your cards are the following\n");
+
+                        pcurr1 = phead1;
+
+                        while (pcurr1 != NULL) {
+                            NodePrintNodeData(pcurr1);
+                            pcurr1 = GetNextNode(pcurr1);
+
+                        }
+                    }
+                }
+                else if (cardsPlace == 2) {
+                    printf("What card would you like to place (x, y) (smallest, largest) \n");
+                    scanf("%d, %d", &card1, &card2);
+                    while (!isPlayable2(ccurr, pcurr1, card1, card2)) {
+                        printf("That card is not playable try again!\n\n");
+                        printf("What card would you like to place (x, y) (smallest, largest) \n");
+                        scanf("%d, %d", &card1, &card2);
+                    }
+                    if (isPlayable2(ccurr, pcurr1, card1, card2)) {
+                        printf("That card was playable \n");
+                        
+                        replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                        pcurr1 = phead1;
+
+                        for (i = 1; i < card1; i++) {
+                            pcurr1 = GetNextNode(pcurr1);
+                        }
+
+                        pcardTemp.value = pcurr1->value;
+                        strcpy(pcardTemp.action, pcurr1->action);
+                        strcpy(pcardTemp.color, pcurr1->color);
+
+                        for (j = 0; j < (card2 - card1); j++) {
+                            pcurr1 = GetNextNode(pcurr1);
+                        }
+                        
+                        if (isDoubleColorMatch(pcurr1, pcardTemp, ccurr)) {
+                            dColorMatches++;
+                        }
+
+                        if (card1 != 1) {
+                            pcurr1 = phead1;
+                            card* temp;
+                            for (i = 1; i < card1 - 1; i++) {
+                                pcurr1 = GetNextNode(pcurr1);
+                            }
+                            temp = pcurr1->pt;
+
+                            if (pcurr1->pt->pt != NULL)
+                            {
+                                pcurr1->pt = pcurr1->pt->pt;
+                            }
+                            else if (pcurr1->pt->pt == NULL) {
+                                ptail1 = pcurr1;
+                            }
+                            free(temp);
+                        }
+                        else if (card1 == 1) {
+                            card* temp;
+                            temp = phead1;
+                            phead1 = phead1->pt;
+                            free(temp);
+                        }
+                        if ((card1 != 1)&&(card2 != 2)) {
+                            card* temp;
+                            pcurr1 = phead1;
+                            for (i = 1; i < card2 - 2; i++) {
+                                pcurr1 = GetNextNode(pcurr1);
+                            }
+                            temp = pcurr1->pt;
+                            if (pcurr1->pt->pt != NULL)
+                            {
+                                pcurr1->pt = pcurr1->pt->pt;
+                            }
+                            else if (pcurr1->pt->pt == NULL) {
+                                NodeInsertAfter(ptail1, pcurr1);
+                                ptail1 = pcurr1;
+                            }
+                            free(temp);
+                        }
+                        else if ((card1 == 1)&&(card2 == 2)) {
+                            card* temp;
+                            temp = phead1;
+                            phead1 = phead1->pt;
+                            free(temp);
+                        }
+
+                        printf("Player 1's turn\n Your cards are the following\n");
+
+                        pcurr1 = phead1;
+
+                        while (pcurr1 != NULL) {
+                            NodePrintNodeData(pcurr1);
+                            pcurr1 = GetNextNode(pcurr1);
+
+                        }
+                    }
+                }
+
+                pcurr1 = phead1;
+
+                if (GetNextNode(ccurr) == NULL) {
+                    isturnEnd = true;
+                }
+                if (GetNextNode(ccurr) != NULL) {
+                    ccurr = GetNextNode(ccurr);
+                }
+            }
+            printf("\n\nYou had %d Single Color Matches and %d Double color Matches!\n\n", sColorMatches, dColorMatches);
+            while (sColorMatches > 0)
+            {
+                printf("You get to discard a card %d more times!\n", sColorMatches);
+                printf("What card would you like to discard (x)?\n");
+                
+                scanf("%d", &card1);
+
+                if (card1 != 1) {
+                    card* temp;
+                    pcurr1 = phead1;
+                    for (i = 1; i < card1 - 1; i++) {
+                        pcurr1 = GetNextNode(pcurr1);
+                    }
+                    temp = pcurr1->pt;
+                    
+                    strcpy(center.action, pcurr1->pt->action);
+                    strcpy(center.color, pcurr1->pt->color);
+                    center.value = pcurr1->pt->value;
+
+                    if (pcurr1->pt->pt != NULL)
+                    {
+                        pcurr1->pt = pcurr1->pt->pt;
+                    }
+                    else if (pcurr1->pt->pt == NULL) {
+                        NodeInsertAfter(ptail1, pcurr1);
+                        ptail1 = pcurr1;
+                    }
+                    free(temp);
+                }
+                
+                addCenterCard(ctail, ccurr, chead, center);
+
+                printf("Your card #%d has no been discarded and is now a center card", card1);
+
+                sColorMatches--;
+            }
+            while (dColorMatches > 0)
+            {
+                printf("You get to discard a card and everyone draws a card %d more times!\n", dColorMatches);
+                printf("What card would you like to discard (x)?\n");
+
+                scanf("%d", &card1);
+
+                if (card1 != 1) {
+                    card* temp;
+                    pcurr1 = phead1;
+                    for (i = 1; i < card1 - 1; i++) {
+                        pcurr1 = GetNextNode(pcurr1);
+                    }
+                    temp = pcurr1->pt;
+
+                    strcpy(center.action, pcurr1->pt->action);
+                    strcpy(center.color, pcurr1->pt->color);
+                    center.value = pcurr1->pt->value;
+
+                    if (pcurr1->pt->pt != NULL)
+                    {
+                        pcurr1->pt = pcurr1->pt->pt;
+                    }
+                    else if (pcurr1->pt->pt == NULL) {
+                        NodeInsertAfter(ptail1, pcurr1);
+                        ptail1 = pcurr1;
+                    }
+                    free(temp);
+                }
+
+                addCenterCard(ctail, ccurr, chead, center);
+
+                printf("Your card #%d has no been discarded and is now a center card", card1);
+
+                //FIXME EVERYONE DRAWS A CARD ONCE IN THIS FUNCTION EXCEPT THE PLAYER WHO GOT THE DOUBLE MATCH
+
+                dColorMatches--;
+            }
+        }
+
+        // PLAYER 2 /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        else if (turn == 1) {
+        printf("Player 2's turn\n Your cards are the following\n");
+
+        pcurr2 = phead2;
+
+        while (pcurr2 != NULL) {
+            NodePrintNodeData(pcurr2);
+            pcurr2 = GetNextNode(pcurr2);
+
+        }
+
+        ccurr = chead;
+        pcurr2 = phead2;
+        isturnEnd = false;
+        endturn = false;
+
+        while (isturnEnd != true) {
+
+            printf("how many cards would you like to play on: \n");
+
+            NodePrintNodeData(ccurr);
+            printf("\nType 0, 1 or 2\n");
+            scanf("%d", &cardsPlace);
+            if ((cardsPlace == 0)) {
+
+            }
+            else if (cardsPlace == 1) {
+                printf("What card would you like to place (x)? \n");
+                scanf("%d", &card1);
+                while (!isPlayable1(ccurr, pcurr2, card1)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x)? \n");
+                    scanf("%d", &card1);
+
+                }
+                if (isPlayable1(ccurr, pcurr2, card1)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr2 = phead2;
+                    for (i = 1; i < card1; i++) {
+                        pcurr2 = GetNextNode(pcurr2);
+                    }
+
+                    if (isSingleColorMatch(pcurr2, ccurr)) {
+                        sColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        card* temp;
+                        pcurr2 = phead2;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr2 = GetNextNode(pcurr2);
+                        }
+                        temp = pcurr2->pt;
+
+                        if (pcurr2->pt->pt != NULL)
+                        {
+                            pcurr2->pt = pcurr2->pt->pt;
+                        }
+                        else if (pcurr2->pt->pt == NULL) {
+                            NodeInsertAfter(ptail2, pcurr2);
+                            ptail2 = pcurr2;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead2;
+                        phead2 = phead2->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 2's turn\n Your cards are the following\n");
+
+                    pcurr2 = phead2;
+
+                    while (pcurr2 != NULL) {
+                        NodePrintNodeData(pcurr2);
+                        pcurr2 = GetNextNode(pcurr2);
+
+                    }
+                }
+            }
+            else if (cardsPlace == 2) {
+                printf("What card would you like to place (x, y) (smallest, largest) \n");
+                scanf("%d, %d", &card1, &card2);
+                while (!isPlayable2(ccurr, pcurr2, card1, card2)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x, y) (smallest, largest) \n");
+                    scanf("%d, %d", &card1, &card2);
+                }
+                if (isPlayable2(ccurr, pcurr2, card1, card2)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr2 = phead2;
+
+                    for (i = 1; i < card1; i++) {
+                        pcurr2 = GetNextNode(pcurr2);
+                    }
+
+                    pcardTemp.value = pcurr2->value;
+                    strcpy(pcardTemp.action, pcurr2->action);
+                    strcpy(pcardTemp.color, pcurr2->color);
+
+                    for (j = 0; j < (card2 - card1); j++) {
+                        pcurr2 = GetNextNode(pcurr2);
+                    }
+
+                    if (isDoubleColorMatch(pcurr2, pcardTemp, ccurr)) {
+                        dColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        pcurr2 = phead2;
+                        card* temp;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr2 = GetNextNode(pcurr2);
+                        }
+                        temp = pcurr2->pt;
+
+                        if (pcurr2->pt->pt != NULL)
+                        {
+                            pcurr2->pt = pcurr2->pt->pt;
+                        }
+                        else if (pcurr2->pt->pt == NULL) {
+                            ptail2 = pcurr2;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead2;
+                        phead2 = phead2->pt;
+                        free(temp);
+                    }
+                    if ((card1 != 1) && (card2 != 2)) {
+                        card* temp;
+                        pcurr2 = phead2;
+                        for (i = 1; i < card2 - 2; i++) {
+                            pcurr2 = GetNextNode(pcurr2);
+                        }
+                        temp = pcurr2->pt;
+                        if (pcurr2->pt->pt != NULL)
+                        {
+                            pcurr2->pt = pcurr2->pt->pt;
+                        }
+                        else if (pcurr2->pt->pt == NULL) {
+                            NodeInsertAfter(ptail2, pcurr2);
+                            ptail2 = pcurr2;
+                        }
+                        free(temp);
+                    }
+                    else if ((card1 == 1) && (card2 == 2)) {
+                        card* temp;
+                        temp = phead2;
+                        phead2 = phead2->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 2's turn\n Your cards are the following\n");
+
+                    pcurr2 = phead2;
+
+                    while (pcurr2 != NULL) {
+                        NodePrintNodeData(pcurr2);
+                        pcurr2 = GetNextNode(pcurr2);
+
+                    }
+                }
+            }
+
+            pcurr2 = phead2;
+
+            if (GetNextNode(ccurr) == NULL) {
+                isturnEnd = true;
+            }
+            if (GetNextNode(ccurr) != NULL) {
+                ccurr = GetNextNode(ccurr);
+            }
+        }
+        printf("\n\nYou had %d Single Color Matches and %d Double color Matches!\n\n", sColorMatches, dColorMatches);
+        while (sColorMatches > 0)
+        {
+            printf("You get to discard a card %d more times!\n", sColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr2 = phead2;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr2 = GetNextNode(pcurr2);
+                }
+                temp = pcurr2->pt;
+
+                strcpy(center.action, pcurr2->pt->action);
+                strcpy(center.color, pcurr2->pt->color);
+                center.value = pcurr2->pt->value;
+
+                if (pcurr2->pt->pt != NULL)
+                {
+                    pcurr2->pt = pcurr2->pt->pt;
+                }
+                else if (pcurr2->pt->pt == NULL) {
+                    NodeInsertAfter(ptail2, pcurr2);
+                    ptail2 = pcurr2;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card", card1);
+
+            sColorMatches--;
+        }
+        while (dColorMatches > 0)
+        {
+            printf("You get to discard a card and everyone draws a card %d more times!\n", dColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr2 = phead2;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr2 = GetNextNode(pcurr2);
+                }
+                temp = pcurr2->pt;
+
+                strcpy(center.action, pcurr2->pt->action);
+                strcpy(center.color, pcurr2->pt->color);
+                center.value = pcurr2->pt->value;
+
+                if (pcurr2->pt->pt != NULL)
+                {
+                    pcurr2->pt = pcurr2->pt->pt;
+                }
+                else if (pcurr2->pt->pt == NULL) {
+                    NodeInsertAfter(ptail2, pcurr2);
+                    ptail2 = pcurr2;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card\n\n", card1);
+
+            //FIXME EVERYONE DRAWS A CARD ONCE IN THIS FUNCTION EXCEPT THE PLAYER WHO GOT THE DOUBLE MATCH
+
+            dColorMatches--;
+        }
+
+        // PLAYER 3 ////////////////////////////////////////////////////////////////////////////////////////////
+
+        }
+        else if (turn == 2) {
+        printf("Player 3's turn\n Your cards are the following\n");
+
+        pcurr3 = phead3;
+
+        while (pcurr3 != NULL) {
+            NodePrintNodeData(pcurr3);
+            pcurr3 = GetNextNode(pcurr3);
+
+        }
+
+        ccurr = chead;
+        pcurr3 = phead3;
+        isturnEnd = false;
+        endturn = false;
+
+        while (isturnEnd != true) {
+
+            printf("how many cards would you like to play on: \n");
+
+            NodePrintNodeData(ccurr);
+            printf("\nType 0, 1 or 2\n");
+            scanf("%d", &cardsPlace);
+            if ((cardsPlace == 0)) {
+
+            }
+            else if (cardsPlace == 1) {
+                printf("What card would you like to place (x)? \n");
+                scanf("%d", &card1);
+                while (!isPlayable1(ccurr, pcurr3, card1)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x)? \n");
+                    scanf("%d", &card1);
+
+                }
+                if (isPlayable1(ccurr, pcurr3, card1)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr3 = phead3;
+                    for (i = 1; i < card1; i++) {
+                        pcurr3 = GetNextNode(pcurr3);
+                    }
+
+                    if (isSingleColorMatch(pcurr3, ccurr)) {
+                        sColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        card* temp;
+                        pcurr3 = phead3;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr3 = GetNextNode(pcurr3);
+                        }
+                        temp = pcurr3->pt;
+
+                        if (pcurr3->pt->pt != NULL)
+                        {
+                            pcurr3->pt = pcurr3->pt->pt;
+                        }
+                        else if (pcurr3->pt->pt == NULL) {
+                            NodeInsertAfter(ptail3, pcurr3);
+                            ptail3 = pcurr3;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead3;
+                        phead3 = phead3->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 3's turn\n Your cards are the following\n");
+
+                    pcurr3 = phead3;
+
+                    while (pcurr3 != NULL) {
+                        NodePrintNodeData(pcurr3);
+                        pcurr3 = GetNextNode(pcurr3);
+
+                    }
+                }
+            }
+            else if (cardsPlace == 2) {
+                printf("What card would you like to place (x, y) (smallest, largest) \n");
+                scanf("%d, %d", &card1, &card2);
+                while (!isPlayable2(ccurr, pcurr3, card1, card2)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x, y) (smallest, largest) \n");
+                    scanf("%d, %d", &card1, &card2);
+                }
+                if (isPlayable2(ccurr, pcurr3, card1, card2)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr3 = phead3;
+
+                    for (i = 1; i < card1; i++) {
+                        pcurr3 = GetNextNode(pcurr3);
+                    }
+
+                    pcardTemp.value = pcurr3->value;
+                    strcpy(pcardTemp.action, pcurr3->action);
+                    strcpy(pcardTemp.color, pcurr3->color);
+
+                    for (j = 0; j < (card2 - card1); j++) {
+                        pcurr3 = GetNextNode(pcurr3);
+                    }
+
+                    if (isDoubleColorMatch(pcurr3, pcardTemp, ccurr)) {
+                        dColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        pcurr3 = phead3;
+                        card* temp;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr3 = GetNextNode(pcurr3);
+                        }
+                        temp = pcurr3->pt;
+
+                        if (pcurr3->pt->pt != NULL)
+                        {
+                            pcurr3->pt = pcurr3->pt->pt;
+                        }
+                        else if (pcurr3->pt->pt == NULL) {
+                            ptail3 = pcurr3;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead3;
+                        phead3 = phead3->pt;
+                        free(temp);
+                    }
+                    if ((card1 != 1) && (card2 != 1)) {
+                        card* temp;
+                        pcurr3 = phead3;
+                        for (i = 1; i < card2 - 2; i++) {
+                            pcurr3 = GetNextNode(pcurr3);
+                        }
+                        temp = pcurr3->pt;
+                        if (pcurr3->pt->pt != NULL)
+                        {
+                            pcurr3->pt = pcurr3->pt->pt;
+                        }
+                        else if (pcurr3->pt->pt == NULL) {
+                            NodeInsertAfter(ptail3, pcurr3);
+                            ptail3 = pcurr3;
+                        }
+                        free(temp);
+                    }
+                    else if ((card1 == 1) && (card2 == 2)) {
+                        card* temp;
+                        temp = phead3;
+                        phead3 = phead3->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 3's turn\n Your cards are the following\n");
+
+                    pcurr3 = phead3;
+
+                    while (pcurr3 != NULL) {
+                        NodePrintNodeData(pcurr3);
+                        pcurr3 = GetNextNode(pcurr3);
+
+                    }
+                }
+            }
+
+            pcurr3 = phead3;
+
+            if (GetNextNode(ccurr) == NULL) {
+                isturnEnd = true;
+            }
+            if (GetNextNode(ccurr) != NULL) {
+                ccurr = GetNextNode(ccurr);
+            }
+        }
+        printf("\n\nYou had %d Single Color Matches and %d Double color Matches!\n\n", sColorMatches, dColorMatches);
+        while (sColorMatches > 0)
+        {
+            printf("You get to discard a card %d more times!\n", sColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr3 = phead3;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr3 = GetNextNode(pcurr3);
+                }
+                temp = pcurr3->pt;
+
+                strcpy(center.action, pcurr3->pt->action);
+                strcpy(center.color, pcurr3->pt->color);
+                center.value = pcurr3->pt->value;
+
+                if (pcurr3->pt->pt != NULL)
+                {
+                    pcurr3->pt = pcurr3->pt->pt;
+                }
+                else if (pcurr3->pt->pt == NULL) {
+                    NodeInsertAfter(ptail3, pcurr3);
+                    ptail3 = pcurr3;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card", card1);
+
+            sColorMatches--;
+        }
+        while (dColorMatches > 0)
+        {
+            printf("You get to discard a card and everyone draws a card %d more times!\n", dColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr3 = phead3;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr3 = GetNextNode(pcurr3);
+                }
+                temp = pcurr3->pt;
+
+                strcpy(center.action, pcurr3->pt->action);
+                strcpy(center.color, pcurr3->pt->color);
+                center.value = pcurr3->pt->value;
+
+                if (pcurr3->pt->pt != NULL)
+                {
+                    pcurr3->pt = pcurr3->pt->pt;
+                }
+                else if (pcurr3->pt->pt == NULL) {
+                    NodeInsertAfter(ptail3, pcurr3);
+                    ptail3 = pcurr3;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card\n\n", card1);
+
+            //FIXME EVERYONE DRAWS A CARD ONCE IN THIS FUNCTION EXCEPT THE PLAYER WHO GOT THE DOUBLE MATCH
+
+            dColorMatches--;
+        }
+        // PLAYER 4 /////////////////////////////////////////////////////////////////////////////////////////
+        }
+        else if (turn == 3) {
+        printf("Player 4's turn\n Your cards are the following\n");
+
+        pcurr4 = phead4;
+
+        while (pcurr4 != NULL) {
+            NodePrintNodeData(pcurr4);
+            pcurr4 = GetNextNode(pcurr4);
+
+        }
+
+        ccurr = chead;
+        pcurr4 = phead4;
+        isturnEnd = false;
+        endturn = false;
+
+        while (isturnEnd != true) {
+
+            printf("how many cards would you like to play on: \n");
+
+            NodePrintNodeData(ccurr);
+            printf("\nType 0, 1 or 2\n");
+            scanf("%d", &cardsPlace);
+            if ((cardsPlace == 0)) {
+
+            }
+            else if (cardsPlace == 1) {
+                printf("What card would you like to place (x)? \n");
+                scanf("%d", &card1);
+                while (!isPlayable1(ccurr, pcurr4, card1)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x)? \n");
+                    scanf("%d", &card1);
+
+                }
+                if (isPlayable1(ccurr, pcurr4, card1)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr4 = phead4;
+                    for (i = 1; i < card1; i++) {
+                        pcurr4 = GetNextNode(pcurr4);
+                    }
+
+                    if (isSingleColorMatch(pcurr4, ccurr)) {
+                        sColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        card* temp;
+                        pcurr4 = phead4;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr4 = GetNextNode(pcurr4);
+                        }
+                        temp = pcurr4->pt;
+
+                        if (pcurr4->pt->pt != NULL)
+                        {
+                            pcurr4->pt = pcurr4->pt->pt;
+                        }
+                        else if (pcurr4->pt->pt == NULL) {
+                            NodeInsertAfter(ptail4, pcurr4);
+                            ptail4 = pcurr4;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead4;
+                        phead4 = phead4->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 4's turn\n Your cards are the following\n");
+
+                    pcurr4 = phead4;
+
+                    while (pcurr4 != NULL) {
+                        NodePrintNodeData(pcurr4);
+                        pcurr4 = GetNextNode(pcurr4);
+
+                    }
+                }
+            }
+            else if (cardsPlace == 2) {
+                printf("What card would you like to place (x, y) (smallest, largest) \n");
+                scanf("%d, %d", &card1, &card2);
+                while (!isPlayable2(ccurr, pcurr4, card1, card2)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x, y) (smallest, largest) \n");
+                    scanf("%d, %d", &card1, &card2);
+                }
+                if (isPlayable2(ccurr, pcurr4, card1, card2)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr4 = phead4;
+
+                    for (i = 1; i < card1; i++) {
+                        pcurr4 = GetNextNode(pcurr4);
+                    }
+
+                    pcardTemp.value = pcurr4->value;
+                    strcpy(pcardTemp.action, pcurr4->action);
+                    strcpy(pcardTemp.color, pcurr4->color);
+
+                    for (j = 0; j < (card2 - card1); j++) {
+                        pcurr4 = GetNextNode(pcurr4);
+                    }
+
+                    if (isDoubleColorMatch(pcurr4, pcardTemp, ccurr)) {
+                        dColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        pcurr4 = phead4;
+                        card* temp;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr4 = GetNextNode(pcurr4);
+                        }
+                        temp = pcurr4->pt;
+
+                        if (pcurr4->pt->pt != NULL)
+                        {
+                            pcurr4->pt = pcurr4->pt->pt;
+                        }
+                        else if (pcurr4->pt->pt == NULL) {
+                            ptail4 = pcurr4;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead4;
+                        phead4 = phead4->pt;
+                        free(temp);
+                    }
+                    if ((card1 != 1) && (card2 != 1)) {
+                        card* temp;
+                        pcurr4 = phead4;
+                        for (i = 1; i < card2 - 2; i++) {
+                            pcurr4 = GetNextNode(pcurr4);
+                        }
+                        temp = pcurr4->pt;
+                        if (pcurr4->pt->pt != NULL)
+                        {
+                            pcurr4->pt = pcurr4->pt->pt;
+                        }
+                        else if (pcurr4->pt->pt == NULL) {
+                            NodeInsertAfter(ptail4, pcurr4);
+                            ptail4 = pcurr4;
+                        }
+                        free(temp);
+                    }
+                    else if ((card1 == 1) && (card2 == 2)) {
+                        card* temp;
+                        temp = phead4;
+                        phead4 = phead4->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 4's turn\n Your cards are the following\n");
+
+                    pcurr4 = phead4;
+
+                    while (pcurr4 != NULL) {
+                        NodePrintNodeData(pcurr4);
+                        pcurr4 = GetNextNode(pcurr4);
+
+                    }
+                }
+            }
+
+            pcurr4 = phead4;
+
+            if (GetNextNode(ccurr) == NULL) {
+                isturnEnd = true;
+            }
+            if (GetNextNode(ccurr) != NULL) {
+                ccurr = GetNextNode(ccurr);
+            }
+        }
+        printf("\n\nYou had %d Single Color Matches and %d Double color Matches!\n\n", sColorMatches, dColorMatches);
+        while (sColorMatches > 0)
+        {
+            printf("You get to discard a card %d more times!\n", sColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr4 = phead4;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr4 = GetNextNode(pcurr4);
+                }
+                temp = pcurr4->pt;
+
+                strcpy(center.action, pcurr4->pt->action);
+                strcpy(center.color, pcurr4->pt->color);
+                center.value = pcurr4->pt->value;
+
+                if (pcurr4->pt->pt != NULL)
+                {
+                    pcurr4->pt = pcurr4->pt->pt;
+                }
+                else if (pcurr4->pt->pt == NULL) {
+                    NodeInsertAfter(ptail4, pcurr4);
+                    ptail4 = pcurr4;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card", card1);
+
+            sColorMatches--;
+        }
+        while (dColorMatches > 0)
+        {
+            printf("You get to discard a card and everyone draws a card %d more times!\n", dColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr4 = phead4;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr4 = GetNextNode(pcurr4);
+                }
+                temp = pcurr4->pt;
+
+                strcpy(center.action, pcurr4->pt->action);
+                strcpy(center.color, pcurr4->pt->color);
+                center.value = pcurr4->pt->value;
+
+                if (pcurr4->pt->pt != NULL)
+                {
+                    pcurr4->pt = pcurr4->pt->pt;
+                }
+                else if (pcurr4->pt->pt == NULL) {
+                    NodeInsertAfter(ptail4, pcurr4);
+                    ptail4 = pcurr4;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card\n\n", card1);
+
+            //FIXME EVERYONE DRAWS A CARD ONCE IN THIS FUNCTION EXCEPT THE PLAYER WHO GOT THE DOUBLE MATCH
+
+            dColorMatches--;
+        }
+
+        //PLAYER 5 /////////////////////////////////////////////////////////
+
+        }
+        else if (turn == 4) {
+        printf("Player 5's turn\n Your cards are the following\n");
+
+        pcurr5 = phead5;
+
+        while (pcurr5 != NULL) {
+            NodePrintNodeData(pcurr5);
+            pcurr5 = GetNextNode(pcurr5);
+
+        }
+
+        ccurr = chead;
+        pcurr5 = phead5;
+        isturnEnd = false;
+        endturn = false;
+
+        while (isturnEnd != true) {
+
+            printf("how many cards would you like to play on: \n");
+
+            NodePrintNodeData(ccurr);
+            printf("\nType 0, 1 or 2\n");
+            scanf("%d", &cardsPlace);
+            if ((cardsPlace == 0)) {
+
+            }
+            else if (cardsPlace == 1) {
+                printf("What card would you like to place (x)? \n");
+                scanf("%d", &card1);
+                while (!isPlayable1(ccurr, pcurr5, card1)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x)? \n");
+                    scanf("%d", &card1);
+
+                }
+                if (isPlayable1(ccurr, pcurr5, card1)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr5 = phead5;
+                    for (i = 1; i < card1; i++) {
+                        pcurr5 = GetNextNode(pcurr5);
+                    }
+
+                    if (isSingleColorMatch(pcurr5, ccurr)) {
+                        sColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        card* temp;
+                        pcurr5 = phead5;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr5 = GetNextNode(pcurr5);
+                        }
+                        temp = pcurr5->pt;
+
+                        if (pcurr5->pt->pt != NULL)
+                        {
+                            pcurr5->pt = pcurr5->pt->pt;
+                        }
+                        else if (pcurr5->pt->pt == NULL) {
+                            NodeInsertAfter(ptail5, pcurr5);
+                            ptail5 = pcurr5;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead5;
+                        phead5 = phead5->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 5's turn\n Your cards are the following\n");
+
+                    pcurr5 = phead5;
+
+                    while (pcurr5 != NULL) {
+                        NodePrintNodeData(pcurr5);
+                        pcurr5 = GetNextNode(pcurr5);
+
+                    }
+                }
+            }
+            else if (cardsPlace == 2) {
+                printf("What card would you like to place (x, y) (smallest, largest) \n");
+                scanf("%d, %d", &card1, &card2);
+                while (!isPlayable2(ccurr, pcurr5, card1, card2)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x, y) (smallest, largest) \n");
+                    scanf("%d, %d", &card1, &card2);
+                }
+                if (isPlayable2(ccurr, pcurr5, card1, card2)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr5 = phead5;
+
+                    for (i = 1; i < card1; i++) {
+                        pcurr5 = GetNextNode(pcurr5);
+                    }
+
+                    pcardTemp.value = pcurr5->value;
+                    strcpy(pcardTemp.action, pcurr5->action);
+                    strcpy(pcardTemp.color, pcurr5->color);
+
+                    for (j = 0; j < (card2 - card1); j++) {
+                        pcurr5 = GetNextNode(pcurr5);
+                    }
+
+                    if (isDoubleColorMatch(pcurr5, pcardTemp, ccurr)) {
+                        dColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        pcurr5 = phead5;
+                        card* temp;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr5 = GetNextNode(pcurr5);
+                        }
+                        temp = pcurr5->pt;
+
+                        if (pcurr5->pt->pt != NULL)
+                        {
+                            pcurr5->pt = pcurr5->pt->pt;
+                        }
+                        else if (pcurr5->pt->pt == NULL) {
+                            ptail5 = pcurr5;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead5;
+                        phead5 = phead5->pt;
+                        free(temp);
+                    }
+                    if ((card1 != 1) && (card2 != 1)) {
+                        card* temp;
+                        pcurr5 = phead5;
+                        for (i = 1; i < card2 - 2; i++) {
+                            pcurr5 = GetNextNode(pcurr5);
+                        }
+                        temp = pcurr5->pt;
+                        if (pcurr5->pt->pt != NULL)
+                        {
+                            pcurr5->pt = pcurr5->pt->pt;
+                        }
+                        else if (pcurr5->pt->pt == NULL) {
+                            NodeInsertAfter(ptail5, pcurr5);
+                            ptail5 = pcurr5;
+                        }
+                        free(temp);
+                    }
+                    else if ((card1 == 1) && (card2 == 2)) {
+                        card* temp;
+                        temp = phead5;
+                        phead5 = phead5->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 5's turn\n Your cards are the following\n");
+
+                    pcurr5 = phead5;
+
+                    while (pcurr5 != NULL) {
+                        NodePrintNodeData(pcurr5);
+                        pcurr5 = GetNextNode(pcurr5);
+
+                    }
+                }
+            }
+
+            pcurr5 = phead5;
+
+            if (GetNextNode(ccurr) == NULL) {
+                isturnEnd = true;
+            }
+            if (GetNextNode(ccurr) != NULL) {
+                ccurr = GetNextNode(ccurr);
+            }
+        }
+        printf("\n\nYou had %d Single Color Matches and %d Double color Matches!\n\n", sColorMatches, dColorMatches);
+        while (sColorMatches > 0)
+        {
+            printf("You get to discard a card %d more times!\n", sColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr5 = phead5;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr5 = GetNextNode(pcurr5);
+                }
+                temp = pcurr5->pt;
+
+                strcpy(center.action, pcurr5->pt->action);
+                strcpy(center.color, pcurr5->pt->color);
+                center.value = pcurr5->pt->value;
+
+                if (pcurr5->pt->pt != NULL)
+                {
+                    pcurr5->pt = pcurr5->pt->pt;
+                }
+                else if (pcurr5->pt->pt == NULL) {
+                    NodeInsertAfter(ptail5, pcurr5);
+                    ptail5 = pcurr5;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card", card1);
+
+            sColorMatches--;
+        }
+        while (dColorMatches > 0)
+        {
+            printf("You get to discard a card and everyone draws a card %d more times!\n", dColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr5 = phead5;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr5 = GetNextNode(pcurr5);
+                }
+                temp = pcurr5->pt;
+
+                strcpy(center.action, pcurr5->pt->action);
+                strcpy(center.color, pcurr5->pt->color);
+                center.value = pcurr5->pt->value;
+
+                if (pcurr5->pt->pt != NULL)
+                {
+                    pcurr5->pt = pcurr5->pt->pt;
+                }
+                else if (pcurr5->pt->pt == NULL) {
+                    NodeInsertAfter(ptail5, pcurr5);
+                    ptail5 = pcurr5;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card\n\n", card1);
+
+            //FIXME EVERYONE DRAWS A CARD ONCE IN THIS FUNCTION EXCEPT THE PLAYER WHO GOT THE DOUBLE MATCH
+
+            dColorMatches--;
+        }
+
+        // PLAYER 6 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        }
+        else if (turn == 5) {
+        printf("Player 6's turn\n Your cards are the following\n");
+
+        pcurr6 = phead6;
+
+        while (pcurr6 != NULL) {
+            NodePrintNodeData(pcurr6);
+            pcurr6 = GetNextNode(pcurr6);
+
+        }
+
+        ccurr = chead;
+        pcurr6 = phead6;
+        isturnEnd = false;
+        endturn = false;
+
+        while (isturnEnd != true) {
+
+            printf("how many cards would you like to play on: \n");
+
+            NodePrintNodeData(ccurr);
+            printf("\nType 0, 1 or 2\n");
+            scanf("%d", &cardsPlace);
+            if ((cardsPlace == 0)) {
+
+            }
+            else if (cardsPlace == 1) {
+                printf("What card would you like to place (x)? \n");
+                scanf("%d", &card1);
+                while (!isPlayable1(ccurr, pcurr6, card1)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x)? \n");
+                    scanf("%d", &card1);
+
+                }
+                if (isPlayable1(ccurr, pcurr6, card1)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr6 = phead6;
+                    for (i = 1; i < card1; i++) {
+                        pcurr6 = GetNextNode(pcurr6);
+                    }
+
+                    if (isSingleColorMatch(pcurr6, ccurr)) {
+                        sColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        card* temp;
+                        pcurr6 = phead6;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr6 = GetNextNode(pcurr6);
+                        }
+                        temp = pcurr6->pt;
+
+                        if (pcurr6->pt->pt != NULL)
+                        {
+                            pcurr6->pt = pcurr6->pt->pt;
+                        }
+                        else if (pcurr6->pt->pt == NULL) {
+                            NodeInsertAfter(ptail6, pcurr6);
+                            ptail6 = pcurr6;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead6;
+                        phead6 = phead6->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 6's turn\n Your cards are the following\n");
+
+                    pcurr6 = phead6;
+
+                    while (pcurr6 != NULL) {
+                        NodePrintNodeData(pcurr6);
+                        pcurr6 = GetNextNode(pcurr6);
+
+                    }
+                }
+            }
+            else if (cardsPlace == 2) {
+                printf("What card would you like to place (x, y) (smallest, largest) \n");
+                scanf("%d, %d", &card1, &card2);
+                while (!isPlayable2(ccurr, pcurr6, card1, card2)) {
+                    printf("That card is not playable try again!\n\n");
+                    printf("What card would you like to place (x, y) (smallest, largest) \n");
+                    scanf("%d, %d", &card1, &card2);
+                }
+                if (isPlayable2(ccurr, pcurr6, card1, card2)) {
+                    printf("That card was playable \n");
+
+                    replaceCenterCard(ctail, ccurr, chead, &replace, &centerCards, deck, &count);
+                    pcurr6 = phead6;
+
+                    for (i = 1; i < card1; i++) {
+                        pcurr6 = GetNextNode(pcurr6);
+                    }
+
+                    pcardTemp.value = pcurr6->value;
+                    strcpy(pcardTemp.action, pcurr6->action);
+                    strcpy(pcardTemp.color, pcurr6->color);
+
+                    for (j = 0; j < (card2 - card1); j++) {
+                        pcurr6 = GetNextNode(pcurr6);
+                    }
+
+                    if (isDoubleColorMatch(pcurr6, pcardTemp, ccurr)) {
+                        dColorMatches++;
+                    }
+
+                    if (card1 != 1) {
+                        pcurr6 = phead6;
+                        card* temp;
+                        for (i = 1; i < card1 - 1; i++) {
+                            pcurr6 = GetNextNode(pcurr6);
+                        }
+                        temp = pcurr6->pt;
+
+                        if (pcurr6->pt->pt != NULL)
+                        {
+                            pcurr6->pt = pcurr6->pt->pt;
+                        }
+                        else if (pcurr6->pt->pt == NULL) {
+                            ptail6 = pcurr6;
+                        }
+                        free(temp);
+                    }
+                    else if (card1 == 1) {
+                        card* temp;
+                        temp = phead6;
+                        phead6 = phead6->pt;
+                        free(temp);
+                    }
+                    if ((card1 != 1) && (card2 != 1)) {
+                        card* temp;
+                        pcurr6 = phead6;
+                        for (i = 1; i < card2 - 2; i++) {
+                            pcurr6 = GetNextNode(pcurr6);
+                        }
+                        temp = pcurr6->pt;
+                        if (pcurr6->pt->pt != NULL)
+                        {
+                            pcurr6->pt = pcurr6->pt->pt;
+                        }
+                        else if (pcurr6->pt->pt == NULL) {
+                            NodeInsertAfter(ptail6, pcurr6);
+                            ptail6 = pcurr6;
+                        }
+                        free(temp);
+                    }
+                    else if ((card1 == 1) && (card2 == 2)) {
+                        card* temp;
+                        temp = phead6;
+                        phead6 = phead6->pt;
+                        free(temp);
+                    }
+
+                    printf("Player 6's turn\n Your cards are the following\n");
+
+                    pcurr6 = phead6;
+
+                    while (pcurr6 != NULL) {
+                        NodePrintNodeData(pcurr6);
+                        pcurr6 = GetNextNode(pcurr6);
+
+                    }
+                }
+            }
+
+            pcurr6 = phead6;
+
+            if (GetNextNode(ccurr) == NULL) {
+                isturnEnd = true;
+            }
+            if (GetNextNode(ccurr) != NULL) {
+                ccurr = GetNextNode(ccurr);
+            }
+        }
+        printf("\n\nYou had %d Single Color Matches and %d Double color Matches!\n\n", sColorMatches, dColorMatches);
+        while (sColorMatches > 0)
+        {
+            printf("You get to discard a card %d more times!\n", sColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr6 = phead6;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr6 = GetNextNode(pcurr6);
+                }
+                temp = pcurr6->pt;
+
+                strcpy(center.action, pcurr6->pt->action);
+                strcpy(center.color, pcurr6->pt->color);
+                center.value = pcurr6->pt->value;
+
+                if (pcurr6->pt->pt != NULL)
+                {
+                    pcurr6->pt = pcurr6->pt->pt;
+                }
+                else if (pcurr6->pt->pt == NULL) {
+                    NodeInsertAfter(ptail6, pcurr6);
+                    ptail6 = pcurr6;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card", card1);
+
+            sColorMatches--;
+        }
+        while (dColorMatches > 0)
+        {
+            printf("You get to discard a card and everyone draws a card %d more times!\n", dColorMatches);
+            printf("What card would you like to discard (x)?\n");
+
+            scanf("%d", &card1);
+
+            if (card1 != 1) {
+                card* temp;
+                pcurr6 = phead6;
+                for (i = 1; i < card1 - 1; i++) {
+                    pcurr6 = GetNextNode(pcurr6);
+                }
+                temp = pcurr6->pt;
+
+                strcpy(center.action, pcurr6->pt->action);
+                strcpy(center.color, pcurr6->pt->color);
+                center.value = pcurr6->pt->value;
+
+                if (pcurr6->pt->pt != NULL)
+                {
+                    pcurr6->pt = pcurr6->pt->pt;
+                }
+                else if (pcurr6->pt->pt == NULL) {
+                    NodeInsertAfter(ptail6, pcurr6);
+                    ptail6 = pcurr6;
+                }
+                free(temp);
+            }
+
+            addCenterCard(ctail, ccurr, chead, center);
+
+            printf("Your card #%d has no been discarded and is now a center card\n\n", card1);
+
+            //FIXME EVERYONE DRAWS A CARD ONCE IN THIS FUNCTION EXCEPT THE PLAYER WHO GOT THE DOUBLE MATCH
+
+            dColorMatches--;
+        }
+
+        }
+
+        turn++;
+        turn = turn % p;
+
+        //END THE GAME IF THE HEAD OF ANY NULL LIST IS NULL AND ANNOUNCE THE WINNER///////////////////////////////
+
+        if (phead1 == NULL) {
+            haswon = true;
+            printf("\n\nPlayer 1 has won! \n");
+        }
+        if (phead2 == NULL) {
+            haswon = true;
+            printf("\n\nPlayer 2 has won! \n");
+        }
+        if ((phead3 == NULL)&&(p >= 3)) {
+            haswon = true;
+            printf("\n\nPlayer 3 has won! \n");
+        }
+        if ((phead4 == NULL)&&(p >= 4)) {
+            haswon = true;
+            printf("\n\nPlayer 4 has won! \n");
+        }
+        if ((phead5 == NULL)&&(p >= 5)) {
+            haswon = true;
+            printf("\n\nPlayer 5 has won! \n");
+        }
+        if ((phead6 == NULL)&&(p >=5)) {
+            haswon = true;
+            printf("\n\nPlayer 6 has won! \n");
+        }
+
+
+    }
+    return 0;
+}
+
+
+
